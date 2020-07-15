@@ -1,10 +1,11 @@
 package com.sid.skienna.datastructures
 
-class Queue <T> (val defaultSize: Int = 16) {
+class Queue <T> (private val defaultSize: Int = 16) {
     private var data = mutableListOf<T>()
 
-    fun add(element: T) {
+    fun add(element: T) : Queue<T> {
         data.add(element)
+        return this
     }
 
     fun pop(): T {
@@ -19,5 +20,9 @@ class Queue <T> (val defaultSize: Int = 16) {
 
     fun size(): Int {
         return data.size
+    }
+
+    override fun toString(): String {
+        return data.toString()
     }
 }
