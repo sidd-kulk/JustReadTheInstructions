@@ -1,23 +1,17 @@
 package com.sid.robertsedgewick.search.symboltables
 
 import java.io.File
+import kotlin.system.measureTimeMillis
 
-class FileHandler(val file: File) {
-    fun parseFile() {
+val LARGE_FILE = "./large_file.txt"
 
-    }
+class FrequencyCounter(private val text: String) {
 
-    fun streamFile() {
-
-    }
-}
-
-class FrequencyCounter(val text: String) {
     private val wordFrequencies = mutableMapOf<String, Int>()
     private var isAnalysed = false
 
     fun analyse(): Map<String, Int> {
-        val tokens = text.split("\\s+".toRegex())
+        val tokens = text.toLowerCase().split("\\s+".toRegex())
         tokens.forEach {
             val currentCount = wordFrequencies[it]
             when {
@@ -31,18 +25,36 @@ class FrequencyCounter(val text: String) {
         }
         isAnalysed = true
 
-        return wordFrequencies.toList().sortedByDescending { (_, value) -> value}.toMap()
-    }
-
-    fun getFrequencyFor(word: String): Int {
-        if(!isAnalysed) {
-            throw IllegalStateException("Text Analysis pending, please invoke analysis before getting frequencies")
-        }
-        return wordFrequencies.getOrDefault(word, 0)
+        return wordFrequencies
     }
 }
 
 fun main() {
-    val fileContents = File("/Users/siddharth/Desktop/decisoins.txt").readText()
-    println(FrequencyCounter(fileContents).analyse())
+    processLargeFile()
+}
+
+fun processLargeFile() {
+    val time = measureTimeMillis {
+        buffered() // Works like a charm
+        // inMemory()  // Throws OOM
+    }
+
+    println(time.toString().plus(" milliseconds"))
+}
+
+private fun inMemory() {
+    val fileContents = File(LARGE_FILE).readText()
+    val frequencyCounter = FrequencyCounter(fileContents)
+    val frequencyMap = frequencyCounter.analyse()
+}
+
+private fun buffered() {
+    val inputStream = File(LARGE_FILE).inputStream()
+    var frequencyMap = mutableMapOf<String, Int>()
+    inputStream.bufferedReader().useLines { lines ->
+        lines.forEach {
+            val frequencyCounter = FrequencyCounter(it)
+            frequencyMap.putAll(frequencyCounter.analyse())
+        }
+    }
 }
